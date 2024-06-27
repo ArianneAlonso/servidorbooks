@@ -88,3 +88,69 @@ app.put("/profesores/:id",(req,res)=>{
 
     res.json({ message: "Usuario actualizado" });
 })
+
+
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+
+const app = express();
+const data = require("./db.json")
+
+//middleware
+app.use(express.json());
+app.use(morgan("dev"));
+app.use(cors());
+
+//configuracion 
+app.set("port", process.env.PORT || 7000) 
+
+//servidor
+app.listen(app.get("port"), () =>{
+    console.log(`el servidor andando en el puerto ${app.get("port")}`);
+} )
+
+
+//controladores
+app.get("/", (req, res) =>{
+    res.send("hola desde el servidor")
+}) 
+
+//listar
+app.get("/lista", (req, res) =>{
+    res.json(data)
+})
+//crear
+app.post("/agregar", (req, res) =>{
+    const {id, Nombre, Apellido, Localidad} = req.body;
+    data.push ({id, Nombre, Apellido, Localidad})
+    if(id && Nombre && Apellido && Localidad){
+        res.json({message: "datos agregados correctamente"})
+    }else{
+        res.json({message: "datos no agregados"})
+    }
+}) 
+//editar 
+app.put("/editar/:id", (req, res) =>{
+    const {id} = req.params
+    const {Nombre, Apellido, Localidad} = req.body
+    const index = data.findIndex(item => item.id === parseInt(id))
+    if(index !== -1){
+        data[index] = {id, Nombre, Apellido, Localidad}
+        res.json("ha sido actualizado")
+    }else{
+        res.json("error al editar")
+    }
+})
+//borrar
+app.delete("/eliminar/:id", (req, res)=> {
+    const {id} = req.params;
+    const index = data.findIndex(item => item.id === parseInt(id));
+    if(index !== -1){
+        data.splice(index, 1)
+        res.json("se elimino correctamente")
+    }else{
+        res.json("no se puedieron eliminar los datos")
+    }
+
+})
